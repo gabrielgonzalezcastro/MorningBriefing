@@ -2,6 +2,7 @@ import feedparser
 import smtplib
 import os
 import re
+import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
@@ -74,12 +75,26 @@ def fetch_entries(feeds, max_items):
                 summary = re.sub(r"\s+", " ", summary)
                 if len(summary) > 280:
                     summary = summary[:277].rsplit(" ", 1)[0] + "…"
+                # Parse publish date from RSS entry
+                pub_date = ""
+                if hasattr(entry, "published_parsed") and entry.published_parsed:
+                    try:
+                        pub_date = datetime(*entry.published_parsed[:6]).strftime("%b %-d, %Y")
+                    except Exception:
+                        pass
+                if not pub_date and hasattr(entry, "updated_parsed") and entry.updated_parsed:
+                    try:
+                        pub_date = datetime(*entry.updated_parsed[:6]).strftime("%b %-d, %Y")
+                    except Exception:
+                        pass
+
                 entries.append({
-                    "title":   title,
-                    "url":     entry.get("link", "#"),
-                    "summary": summary,
-                    "source":  source,
-                    "label":   detect_label(title + " " + summary),
+                    "title":    title,
+                    "url":      entry.get("link", "#"),
+                    "summary":  summary,
+                    "source":   source,
+                    "label":    detect_label(title + " " + summary),
+                    "pub_date": pub_date,
                 })
                 if len(entries) >= max_items:
                     return entries
@@ -114,12 +129,17 @@ def build_card(entry, highlight_class=""):
     summary  = escape(entry["summary"])
     url      = entry["url"]
     source   = escape(entry["source"])
+    pub_date = escape(entry.get("pub_date", ""))
     l_style  = label_style(label)
     h_class  = f' {highlight_class}' if highlight_class else ''
+    date_html = f'<span class="pub-date">{pub_date}</span>' if pub_date else ''
     return f"""
   <div class="card{h_class}">
     <div class="card-top">
-      <h3><a href="{url}" target="_blank" rel="noopener">{title}</a></h3>
+      <div class="card-title-wrap">
+        <h3><a href="{url}" target="_blank" rel="noopener">{title}</a></h3>
+        {date_html}
+      </div>
       <span class="card-label" style="{l_style}">{label.upper()}</span>
     </div>
     <p>{summary}</p>
@@ -171,8 +191,10 @@ def build_html(ai_entries, dotnet_entries):
   .card{{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:10px;transition:border-color 0.2s,transform 0.2s;animation:fadeUp 0.4s ease both}}
   .card:hover{{border-color:#3a3a4f;transform:translateY(-1px)}}
   .card-top{{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}}
+  .card-title-wrap{{flex:1;min-width:0}}
+  .pub-date{{display:block;font-size:11px;color:#505068;margin-top:5px;letter-spacing:0.2px}}
   .card-label{{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0;margin-top:3px}}
-  .card h3{{font-size:15px;font-weight:700;line-height:1.4;flex:1}}
+  .card h3{{font-size:15px;font-weight:700;line-height:1.4}}
   .card h3 a{{color:inherit;text-decoration:none;transition:opacity 0.15s}}
   .card h3 a:hover{{opacity:0.7;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}}
   .card p{{font-size:13px;color:var(--text-muted);line-height:1.65}}
