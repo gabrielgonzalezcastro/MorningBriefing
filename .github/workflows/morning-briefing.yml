@@ -1,0 +1,29 @@
+name: Morning Briefing
+
+on:
+  schedule:
+    # 6am UTC = 6am Dublin (winter/GMT). Change to 0 5 * * * during summer (IST = UTC+1)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # allows manual trigger from GitHub Actions tab
+
+jobs:
+  send-briefing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate and send briefing
+        env:
+          BREVO_LOGIN: ${{ secrets.BREVO_LOGIN }}
+          BREVO_KEY: ${{ secrets.BREVO_KEY }}
+        run: python briefing.py
