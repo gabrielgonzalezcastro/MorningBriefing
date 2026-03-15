@@ -213,7 +213,7 @@ def send_email(html_content):
     today = datetime.now().strftime("%A, %B %-d, %Y")
     msg = MIMEMultipart("alternative")
     msg["Subject"] = f"☕ Morning Briefing — {today}"
-    msg["From"]    = "Gabo's Briefing <a4ff7a001@smtp-brevo.com>"
+    msg["From"]    = "Gabriel <gabrielnoise@gmail.com>"
     msg["To"]      = RECIPIENT
     msg.attach(MIMEText(html_content, "html"))
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
