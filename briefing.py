@@ -14,8 +14,8 @@ SMTP_PORT   = 587
 SMTP_LOGIN  = os.environ["BREVO_LOGIN"]
 SMTP_KEY    = os.environ["BREVO_KEY"]
 RECIPIENT   = "gabrielnoise@gmail.com"
-MAX_AI      = 7
-MAX_DOTNET  = 4
+MAX_AI      = 10
+MAX_DOTNET  = 10
 
 # ─── RSS FEEDS ─────────────────────────────────────────────────────────────────
 
@@ -118,8 +118,10 @@ def build_card(entry, highlight_class=""):
     h_class  = f' {highlight_class}' if highlight_class else ''
     return f"""
   <div class="card{h_class}">
-    <span class="card-label" style="{l_style}">{label.upper()}</span>
-    <h3><a href="{url}" target="_blank" rel="noopener">{title}</a></h3>
+    <div class="card-top">
+      <h3><a href="{url}" target="_blank" rel="noopener">{title}</a></h3>
+      <span class="card-label" style="{l_style}">{label.upper()}</span>
+    </div>
     <p>{summary}</p>
     <div class="source"><a href="{url}" target="_blank" rel="noopener">{source}</a></div>
   </div>"""
@@ -132,12 +134,13 @@ def build_html(ai_entries, dotnet_entries):
                             for i, e in enumerate(ai_entries))
     dotnet_cards = "\n".join(build_card(e, "highlight-dotnet" if i == 0 else "")
                              for i, e in enumerate(dotnet_entries))
+    chevron = '<div class="chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>'
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Morning Briefing — {today}</title>
+<title>Morning Briefing &mdash; {today}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
 <style>
   :root {{
@@ -147,35 +150,41 @@ def build_html(ai_entries, dotnet_entries):
     --accent-green:#34d399;
   }}
   *{{margin:0;padding:0;box-sizing:border-box}}
-  body{{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}}
+  body{{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}}
   .container{{max-width:900px;margin:0 auto;padding:40px 24px 80px}}
   .header{{text-align:center;margin-bottom:56px;padding-bottom:40px;border-bottom:1px solid var(--border)}}
   .header-label{{display:inline-block;font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px;background:var(--surface);padding:6px 16px;border-radius:20px;border:1px solid var(--border)}}
   .header h1{{font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,56px);font-weight:800;letter-spacing:-1px;margin-bottom:12px;background:linear-gradient(135deg,#e8e8ed 0%,#a0a0b8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}}
   .header-date{{font-size:15px;color:var(--text-muted)}}
   .header-date span{{color:var(--accent-green);font-weight:500}}
-  .section-header{{display:flex;align-items:center;gap:14px;margin-bottom:28px;margin-top:56px}}
+  .section-header{{display:flex;align-items:center;gap:14px;margin-bottom:20px;margin-top:52px;cursor:pointer;user-select:none}}
+  .section-header:hover .chevron{{opacity:1}}
   .section-icon{{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}}
   .section-icon.ai{{background:var(--accent-ai-dim)}}.section-icon.dotnet{{background:var(--accent-dotnet-dim)}}
-  .section-header h2{{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;letter-spacing:-0.5px}}
+  .section-header h2{{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;flex:1}}
   .section-header h2.ai-title{{color:var(--accent-ai)}}.section-header h2.dotnet-title{{color:var(--accent-dotnet)}}
-  .card{{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:16px;transition:border-color 0.2s,transform 0.2s}}
+  .chevron{{width:28px;height:28px;border-radius:8px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.6;transition:opacity 0.2s}}
+  .chevron svg{{transition:transform 0.3s ease}}
+  .section-header.collapsed .chevron svg{{transform:rotate(-90deg)}}
+  .section-body{{overflow:hidden;transition:max-height 0.4s ease,opacity 0.3s ease;max-height:9999px;opacity:1}}
+  .section-body.collapsed{{max-height:0;opacity:0}}
+  .card{{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:10px;transition:border-color 0.2s,transform 0.2s;animation:fadeUp 0.4s ease both}}
   .card:hover{{border-color:#3a3a4f;transform:translateY(-1px)}}
-  .card-label{{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border-radius:6px;margin-bottom:14px}}
-  .card h3{{font-size:18px;font-weight:700;margin-bottom:10px;line-height:1.4}}
+  .card-top{{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}}
+  .card-label{{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0;margin-top:3px}}
+  .card h3{{font-size:15px;font-weight:700;line-height:1.4;flex:1}}
   .card h3 a{{color:inherit;text-decoration:none;transition:opacity 0.15s}}
-  .card h3 a:hover{{opacity:0.75;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}}
-  .card p{{font-size:14px;color:var(--text-muted);line-height:1.75}}
-  .card .source{{margin-top:14px;font-size:12px;display:flex;align-items:center;gap:6px}}
-  .card .source a{{color:#7070a0;text-decoration:none}}.card .source a:hover{{color:#a0a0c0;text-decoration:underline}}
-  .card.highlight-ai{{border-color:rgba(167,139,250,0.25);background:linear-gradient(135deg,rgba(167,139,250,0.06) 0%,var(--surface) 100%)}}
-  .card.highlight-dotnet{{border-color:rgba(96,165,250,0.25);background:linear-gradient(135deg,rgba(96,165,250,0.06) 0%,var(--surface) 100%)}}
+  .card h3 a:hover{{opacity:0.7;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}}
+  .card p{{font-size:13px;color:var(--text-muted);line-height:1.65}}
+  .card .source{{margin-top:10px;font-size:11px;display:flex;align-items:center;gap:5px}}
+  .card .source a{{color:#606080;text-decoration:none}}.card .source a:hover{{color:#9090b8;text-decoration:underline}}
+  .card.highlight-ai{{border-color:rgba(167,139,250,0.3);background:linear-gradient(135deg,rgba(167,139,250,0.07) 0%,var(--surface) 100%)}}
+  .card.highlight-dotnet{{border-color:rgba(96,165,250,0.3);background:linear-gradient(135deg,rgba(96,165,250,0.07) 0%,var(--surface) 100%)}}
   .divider{{height:1px;background:var(--border);margin:48px 0}}
   .footer{{text-align:center;padding-top:32px;border-top:1px solid var(--border);margin-top:56px}}
   .footer p{{font-size:12px;color:#444460}}
-  @keyframes fadeUp{{from{{opacity:0;transform:translateY(16px)}}to{{opacity:1;transform:translateY(0)}}}}
-  .card{{animation:fadeUp 0.5s ease both}}
-  @media(max-width:600px){{.container{{padding:24px 16px 60px}}.card{{padding:20px}}}}
+  @keyframes fadeUp{{from{{opacity:0;transform:translateY(12px)}}to{{opacity:1;transform:translateY(0)}}}}
+  @media(max-width:600px){{.container{{padding:24px 16px 60px}}.card{{padding:16px 18px}}.card-top{{flex-direction:column;gap:6px}}}}
 </style>
 </head>
 <body>
@@ -186,24 +195,38 @@ def build_html(ai_entries, dotnet_entries):
     <p class="header-date">{today} &mdash; Dublin, Ireland &bull; <span>Live</span></p>
   </header>
 
-  <div class="section-header">
+  <div class="section-header" onclick="toggleSection(this)">
     <div class="section-icon ai">&#x1F9E0;</div>
     <h2 class="ai-title">Artificial Intelligence</h2>
+    {chevron}
   </div>
-  {ai_cards}
+  <div class="section-body">
+    {ai_cards}
+  </div>
 
   <div class="divider"></div>
 
-  <div class="section-header">
+  <div class="section-header" onclick="toggleSection(this)">
     <div class="section-icon dotnet">&#x2699;&#xFE0F;</div>
     <h2 class="dotnet-title">.NET &amp; C#</h2>
+    {chevron}
   </div>
-  {dotnet_cards}
+  <div class="section-body">
+    {dotnet_cards}
+  </div>
 
   <footer class="footer">
     <p>Gabo's Morning Briefing &bull; Auto-generated on {today} &bull; Powered by Claude</p>
   </footer>
 </div>
+<script>
+  function toggleSection(header) {{
+    const body = header.nextElementSibling;
+    const isCollapsed = body.classList.contains('collapsed');
+    header.classList.toggle('collapsed', !isCollapsed);
+    body.classList.toggle('collapsed', !isCollapsed);
+  }}
+</script>
 </body>
 </html>"""
 
