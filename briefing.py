@@ -51,11 +51,14 @@ DOTNET_FEEDS = [
 ]
 
 APPIAN_FEEDS = [
-    ("Appian Blog",              "https://appian.com/blog/rss.xml"),
-    ("Process Excellence",       "https://www.processexcellencenetwork.com/rss.xml"),
-    ("AIthority",                "https://aithority.com/feed/"),
-    ("Yahoo Finance",            "https://finance.yahoo.com/rss/2.0/headline?s=APPN&region=US&lang=en-US"),
-    ("GuruFocus",                "https://www.gurufocus.com/news/rss?symbol=APPN"),
+    ("Appian Blog",          "https://appian.com/blog/rss.xml"),
+    ("Process Excellence",   "https://www.processexcellencenetwork.com/rss.xml"),
+    ("AIthority",            "https://aithority.com/feed/"),
+    ("InfoQ Architecture",   "https://www.infoq.com/architecture-design/rss"),
+    ("BPM Leader",           "https://bpmleader.com/feed/"),
+    ("No-Code Daily",        "https://www.nocode.tech/rss.xml"),
+    ("SD Times",             "https://sdtimes.com/feed/"),
+    ("Dev.to lowcode",       "https://dev.to/feed/tag/lowcode"),
 ]
 
 # ─── DUBLIN EVENTS (static — update as needed) ─────────────────────────────────
@@ -182,9 +185,12 @@ def fetch_entries(feeds, max_items, keyword=None):
                 if len(summary) > SUMMARY_LEN:
                     summary = summary[:SUMMARY_LEN - 1].rsplit(" ", 1)[0] + "…"
 
-                # keyword filter (case-insensitive)
-                if keyword and keyword.lower() not in (title + " " + summary).lower():
-                    continue
+                # keyword filter (case-insensitive, supports pipe-separated OR terms)
+                if keyword:
+                    haystack = (title + " " + summary).lower()
+                    terms = [t.strip() for t in keyword.split("|")]
+                    if not any(t in haystack for t in terms):
+                        continue
 
                 seen_titles.add(title)
 
@@ -460,7 +466,8 @@ if __name__ == "__main__":
     print(f"   Got {len(dotnet_entries)} articles")
 
     print("📡 Fetching Appian news...")
-    appian_entries = fetch_entries(APPIAN_FEEDS, MAX_APPIAN, keyword="appian")
+    # keyword tuple: entry must match at least one of these terms
+    appian_entries = fetch_entries(APPIAN_FEEDS, MAX_APPIAN, keyword="appian|low-code|lowcode|no-code|bpm|process automation")
     print(f"   Got {len(appian_entries)} articles")
 
     print("🔨 Building HTML...")
