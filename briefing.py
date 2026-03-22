@@ -8,10 +8,11 @@ from email.mime.text import MIMEText
 from datetime import datetime, date, timedelta
 from html import escape
 
-from section_portfolio import build_portfolio_section
-from section_ai        import fetch_ai_entries,     build_ai_section
-from section_dotnet    import fetch_dotnet_entries, build_dotnet_section
-from section_appian    import fetch_appian_entries, build_appian_section
+from section_portfolio  import build_portfolio_section
+from section_financials import build_financials_section
+from section_ai         import fetch_ai_entries,     build_ai_section
+from section_dotnet     import fetch_dotnet_entries, build_dotnet_section
+from section_appian     import fetch_appian_entries, build_appian_section
 
 # ─── CONFIG ────────────────────────────────────────────────────────────────────
 
@@ -199,8 +200,9 @@ def build_section(icon_cls, icon_char, h2_cls, title, section_id, body_html):
 def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
     today = datetime.now().strftime("%A, %B %-d, %Y")
 
-    portfolio_section = build_portfolio_section(build_section)
-    ai_section        = build_ai_section(
+    portfolio_section   = build_portfolio_section(build_section)
+    financials_section  = build_financials_section(build_section)
+    ai_section          = build_ai_section(
         ai_entries, ai_dev_entries,
         build_card, build_subsection, build_event_card, build_section
     )
@@ -225,6 +227,7 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
     --bg:#0f0f13;--surface:#18181f;--border:#2a2a38;--text:#e8e8ed;
     --text-muted:#8888a0;
     --accent-portfolio:#f59e0b;--accent-portfolio-dim:rgba(245,158,11,0.12);
+    --accent-financials:#22d3ee;--accent-financials-dim:rgba(34,211,238,0.12);
     --accent-ai:#a78bfa;--accent-ai-dim:rgba(167,139,250,0.12);
     --accent-dotnet:#60a5fa;--accent-dotnet-dim:rgba(96,165,250,0.12);
     --accent-appian:#06b6d4;--accent-appian-dim:rgba(6,182,212,0.12);
@@ -245,11 +248,13 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   .section-header:hover .chevron{{opacity:1}}
   .section-icon{{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}}
   .section-icon.portfolio{{background:var(--accent-portfolio-dim)}}
+  .section-icon.financials{{background:var(--accent-financials-dim)}}
   .section-icon.ai{{background:var(--accent-ai-dim)}}
   .section-icon.dotnet{{background:var(--accent-dotnet-dim)}}
   .section-icon.appian{{background:var(--accent-appian-dim)}}
   .section-header h2{{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;flex:1}}
   .section-header h2.portfolio-title{{color:var(--accent-portfolio)}}
+  .section-header h2.financials-title{{color:var(--accent-financials)}}
   .section-header h2.ai-title{{color:var(--accent-ai)}}
   .section-header h2.dotnet-title{{color:var(--accent-dotnet)}}
   .section-header h2.appian-title{{color:var(--accent-appian)}}
@@ -295,7 +300,7 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   .footer p{{font-size:12px;color:#444460}}
   /* Portfolio table */
   .pf-table{{border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:8px}}
-  .pf-header-row,.pf-row,.pf-total-row{{display:grid;grid-template-columns:2.2fr 1fr 0.9fr 1.1fr 1.1fr 0.9fr;align-items:center}}
+  .pf-header-row,.pf-row,.pf-total-row{{display:grid;grid-template-columns:2fr 0.9fr 0.8fr 1fr 1fr 1fr 0.8fr;align-items:center}}
   .pf-header-row{{background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);padding:10px 18px}}
   .pf-cell-hdr{{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);text-align:right}}
   .pf-asset-hdr{{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted)}}
@@ -313,13 +318,35 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   .pf-badge-crypto{{background:rgba(167,139,250,0.15);color:#a78bfa}}
   .pf-pos{{color:var(--accent-green)!important}}
   .pf-neg{{color:var(--accent-red)!important}}
+  /* Financials table */
+  .fin-table{{border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:8px}}
+  .fin-header-row,.fin-row{{display:grid;grid-template-columns:2.5fr 1fr 0.8fr;align-items:center}}
+  .fin-header-row{{background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);padding:10px 18px}}
+  .fin-cell-hdr{{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);text-align:right}}
+  .fin-name-hdr{{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted)}}
+  .fin-row{{padding:12px 18px;border-bottom:1px solid rgba(42,42,56,0.7);transition:background 0.15s}}
+  .fin-row:last-of-type{{border-bottom:none}}
+  .fin-row:hover{{background:rgba(255,255,255,0.02)}}
+  .fin-name-cell{{display:flex;align-items:center;gap:10px}}
+  .fin-name{{font-size:14px;font-weight:600;color:var(--text)}}
+  .fin-ticker{{font-size:11px;color:var(--text-muted);margin-top:2px}}
+  .fin-cell{{font-size:13px;font-weight:500;text-align:right;color:var(--text)}}
+  .fin-badge{{display:inline-block;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 7px;border-radius:4px;white-space:nowrap}}
+  .fin-badge-crypto{{background:rgba(167,139,250,0.15);color:#a78bfa}}
+  .fin-badge-index{{background:rgba(96,165,250,0.15);color:#60a5fa}}
+  .fin-badge-etf{{background:rgba(52,211,153,0.15);color:#34d399}}
+  .fin-badge-commodity{{background:rgba(245,158,11,0.15);color:#f59e0b}}
+  .fin-badge-trust{{background:rgba(34,211,238,0.15);color:#22d3ee}}
+  .fin-badge-fx{{background:rgba(251,146,60,0.15);color:#fb923c}}
+  .fin-pos{{color:var(--accent-green)!important}}
+  .fin-neg{{color:var(--accent-red)!important}}
   @keyframes fadeUp{{from{{opacity:0;transform:translateY(12px)}}to{{opacity:1;transform:translateY(0)}}}}
   @media(max-width:600px){{
     .container{{padding:24px 16px 60px}}
     .card{{padding:16px 18px}}
     .card-top{{flex-direction:column;gap:6px}}
     .event-card{{flex-direction:column;gap:12px}}
-    .pf-header-row,.pf-row,.pf-total-row{{grid-template-columns:1.8fr 0.9fr 0.8fr 1fr 1fr 0.8fr;font-size:11px}}
+    .pf-header-row,.pf-row,.pf-total-row{{grid-template-columns:1.6fr 0.8fr 0.7fr 0.9fr 0.9fr 0.9fr 0.7fr;font-size:11px}}
     .pf-header-row,.pf-row,.pf-total-row{{padding:10px 12px}}
   }}
 </style>
@@ -333,6 +360,10 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   </header>
 
 {portfolio_section}
+
+  <div class="divider"></div>
+
+{financials_section}
 
   <div class="divider"></div>
 

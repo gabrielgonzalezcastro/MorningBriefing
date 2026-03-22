@@ -72,6 +72,26 @@ DOTNET_EVENT_KEYWORDS = [
     "azure", "microsoft", "ef core", "entity framework", "rider", "visual studio",
 ]
 
+# ─── FINANCIAL INDICATORS ──────────────────────────────────────────────────────
+# Tickers shown in the Financials section.
+# Format: (display name, Yahoo Finance ticker, category)
+# Categories: crypto | index | etf | commodity | trust | fx
+
+FINANCIAL_INDICATORS = [
+    ("Bitcoin",       "BTC-USD",   "crypto"),
+    ("Ethereum",      "ETH-USD",   "crypto"),
+    ("VIX",           "^VIX",      "index"),
+    ("SPY",           "SPY",       "etf"),
+    ("QQQ",           "QQQ",       "etf"),
+    ("Gold (GLD)",    "GLD",       "commodity"),
+    ("Silver (SLV)",  "SLV",       "commodity"),
+    ("JGGI",          "JGGI.L",    "trust"),
+    ("FCIT",          "FCIT.L",    "trust"),
+    ("PCT",           "PCT.L",     "trust"),
+    ("JAM",           "JAM.L",     "trust"),
+    ("EUR/USD",       "EURUSD=X",  "fx"),
+]
+
 # ─── APPIAN FEEDS ──────────────────────────────────────────────────────────────
 
 APPIAN_FEEDS = [

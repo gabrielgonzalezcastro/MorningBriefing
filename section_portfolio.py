@@ -128,15 +128,18 @@ def compute_pnl(asset, price_data):
         pnl_eur       = None
         pnl_pct       = None
 
+    avg_buying_price = asset.get("avg_buying_price")
+
     return {
         **asset,
-        "price_native":  price_native,
-        "currency":      currency,
-        "price_eur":     price_eur,
-        "change_pct":    change_pct,
-        "current_value": current_value,
-        "pnl_eur":       pnl_eur,
-        "pnl_pct":       pnl_pct,
+        "price_native":    price_native,
+        "currency":        currency,
+        "price_eur":       price_eur,
+        "change_pct":      change_pct,
+        "current_value":   current_value,
+        "pnl_eur":         pnl_eur,
+        "pnl_pct":         pnl_pct,
+        "avg_buying_price": avg_buying_price,
     }
 
 
@@ -177,7 +180,8 @@ def _asset_row(row):
     atype     = escape(row.get("type", "stock").lower())
     badge_lbl = atype.upper()
 
-    price_s  = _native(row["price_native"], row.get("currency"))
+    price_s  = _native(row["price_native"],    row.get("currency"))
+    avg_s    = _native(row["avg_buying_price"], row.get("currency"))
     chg_s    = _pct(row["change_pct"])
     value_s  = _eur(row["current_value"])
     pnl_e_s  = _eur(row["pnl_eur"],  sign=True)
@@ -198,6 +202,7 @@ def _asset_row(row):
     <div class="pf-cell">{price_s}</div>
     <div class="pf-cell {chg_cls}">{chg_s}</div>
     <div class="pf-cell">{value_s}</div>
+    <div class="pf-cell">{avg_s}</div>
     <div class="pf-cell {pnl_cls}">{pnl_e_s}</div>
     <div class="pf-cell {pnl_cls}">{pnl_p_s}</div>
   </div>"""
@@ -235,6 +240,7 @@ def build_portfolio_section(build_section):
       <div class="pf-cell-hdr">Price (native)</div>
       <div class="pf-cell-hdr">Day</div>
       <div class="pf-cell-hdr">Value (EUR)</div>
+      <div class="pf-cell-hdr">Avg. Buy Price</div>
       <div class="pf-cell-hdr">P&amp;L (EUR)</div>
       <div class="pf-cell-hdr">P&amp;L %</div>
     </div>
@@ -244,6 +250,7 @@ def build_portfolio_section(build_section):
       <div class="pf-cell-hdr"></div>
       <div class="pf-cell-hdr"></div>
       <div class="pf-cell-hdr">{_eur(total_value)}</div>
+      <div class="pf-cell-hdr"></div>
       <div class="pf-cell-hdr {total_cls}">{_eur(total_pnl_eur, sign=True)}</div>
       <div class="pf-cell-hdr {total_cls}">{_pct(total_pnl_pct)}</div>
     </div>
