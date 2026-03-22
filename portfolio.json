@@ -18,8 +18,8 @@
       "avg_buying_price":    67.13
     },
     {
-      "name":                "ETHUSD",
-      "ticker":              "ETHUSD",
+      "name":                "ETH",
+      "ticker":              "ETH",
       "type":                "crypto",
       "units":               8.2700,
       "amount_invested_eur": 12540.79,
