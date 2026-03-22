@@ -1,0 +1,20 @@
+{
+  "_comment": "Portfolio holdings. Edit this file to update your positions.",
+  "_fields": {
+    "name":                "Full display name of the asset",
+    "ticker":              "Exchange ticker symbol (e.g. AAPL, BTC-EUR, VWCE.DE)",
+    "type":                "Asset type: 'stock', 'etf', or 'crypto'",
+    "units":               "Number of shares / coins / units you hold",
+    "amount_invested_eur": "Total amount you paid in EUR (your cost basis)"
+  },
+  "assets": [
+    {
+      "name":                "Nike Inc",
+      "ticker":              "NKE",
+      "type":                "stock",
+      "units":               23,
+      "amount_invested_eur": 1466.69
+    }
+   
+  ]
+}
