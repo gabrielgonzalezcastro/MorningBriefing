@@ -16,11 +16,14 @@ except ImportError:
 
 # ─── CURRENCY / FORMATTING RULES ────────────────────────────────────────────────
 
-# Tickers that report in GBX (pence) — divide by 100 to show as GBP
+# Tickers that report in GBX (pence) — shown as raw pence with "p" suffix
 _GBX_TICKERS = {"JGGI.L", "FCIT.L", "PCT.L", "JAM.L"}
 
 # Tickers where we suppress the currency symbol (pure ratios / indices)
-_NO_SYMBOL = {"^VIX", "EURUSD=X"}
+_NO_SYMBOL = {"^VIX", "EURUSD=X", "DX-Y.NYB"}
+
+# Tickers that represent yields — value is already in % (e.g. 4.25 = 4.25%)
+_YIELD_TICKERS = {"^TNX", "^TYX"}
 
 _CURRENCY_SYMBOLS = {"USD": "$", "EUR": "€", "GBP": "£", "GBX": "£"}
 
@@ -28,10 +31,12 @@ _CURRENCY_SYMBOLS = {"USD": "$", "EUR": "€", "GBP": "£", "GBX": "£"}
 def _fmt_price(ticker, price, currency):
     if price is None:
         return "—"
+    if ticker in _YIELD_TICKERS:
+        return f"{price:.3f}%"                              # bond yield
     if ticker in _NO_SYMBOL:
         return f"{price:,.4f}" if ticker == "EURUSD=X" else f"{price:,.2f}"
     if ticker in _GBX_TICKERS:
-        return f"{price:,.2f}p"   # display raw GBX pence value
+        return f"{price:,.2f}p"                             # raw GBX pence
     sym = _CURRENCY_SYMBOLS.get((currency or "USD").upper(), "$")
     return f"{sym}{price:,.2f}"
 

@@ -338,6 +338,7 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   .fin-badge-commodity{{background:rgba(245,158,11,0.15);color:#f59e0b}}
   .fin-badge-trust{{background:rgba(34,211,238,0.15);color:#22d3ee}}
   .fin-badge-fx{{background:rgba(251,146,60,0.15);color:#fb923c}}
+  .fin-badge-bond{{background:rgba(244,114,182,0.15);color:#f472b6}}
   .fin-pos{{color:var(--accent-green)!important}}
   .fin-neg{{color:var(--accent-red)!important}}
   @keyframes fadeUp{{from{{opacity:0;transform:translateY(12px)}}to{{opacity:1;transform:translateY(0)}}}}

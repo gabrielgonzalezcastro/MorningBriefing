@@ -78,18 +78,30 @@ DOTNET_EVENT_KEYWORDS = [
 # Categories: crypto | index | etf | commodity | trust | fx
 
 FINANCIAL_INDICATORS = [
-    ("Bitcoin",       "BTC-USD",   "crypto"),
-    ("Ethereum",      "ETH-USD",   "crypto"),
-    ("VIX",           "^VIX",      "index"),
-    ("SPY",           "SPY",       "etf"),
-    ("QQQ",           "QQQ",       "etf"),
-    ("Gold (GLD)",    "GLD",       "commodity"),
-    ("Silver (SLV)",  "SLV",       "commodity"),
-    ("JGGI",          "JGGI.L",    "trust"),
-    ("FCIT",          "FCIT.L",    "trust"),
-    ("PCT",           "PCT.L",     "trust"),
-    ("JAM",           "JAM.L",     "trust"),
-    ("EUR/USD",       "EURUSD=X",  "fx"),
+    # Crypto
+    ("Bitcoin",        "BTC-USD",   "crypto"),
+    ("Ethereum",       "ETH-USD",   "crypto"),
+    # Volatility & indices
+    ("VIX",            "^VIX",      "index"),
+    ("SPY",            "SPY",       "etf"),
+    ("QQQ",            "QQQ",       "etf"),
+    # Commodities
+    ("Gold (GLD)",     "GLD",       "commodity"),
+    ("Silver (SLV)",   "SLV",       "commodity"),
+    ("Crude Oil",      "CL=F",      "commodity"),   # WTI front-month (CL1!)
+    ("Natural Gas",    "NG=F",      "commodity"),
+    # FX
+    ("DXY",            "DX-Y.NYB",  "fx"),          # US Dollar Index
+    ("EUR/USD",        "EURUSD=X",  "fx"),
+    # Bonds & rates
+    ("US 10Y Yield",   "^TNX",      "bond"),
+    ("US 30Y Yield",   "^TYX",      "bond"),        # closest to 20Y on Yahoo Finance
+    ("TLT",            "TLT",       "etf"),
+    # UK Investment Trusts (prices in GBX — pence)
+    ("JGGI",           "JGGI.L",    "trust"),
+    ("FCIT",           "FCIT.L",    "trust"),
+    ("PCT",            "PCT.L",     "trust"),
+    ("JAM",            "JAM.L",     "trust"),
 ]
 
 # ─── APPIAN FEEDS ──────────────────────────────────────────────────────────────
