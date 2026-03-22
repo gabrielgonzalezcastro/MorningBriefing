@@ -1,11 +1,12 @@
 {
   "_comment": "Portfolio holdings. Edit this file to update your positions.",
   "_fields": {
-    "name":                "Full display name of the asset",
-    "ticker":              "Exchange ticker symbol (e.g. AAPL, BTC-EUR, VWCE.DE)",
-    "type":                "Asset type: 'stock', 'etf', or 'crypto'",
-    "units":               "Number of shares / coins / units you hold",
-    "amount_invested_eur": "Total amount you paid in EUR (your cost basis)"
+    "name":                  "Full display name of the asset",
+    "ticker":                "Exchange ticker symbol (e.g. AAPL, BTC-EUR, VWCE.DE)",
+    "type":                  "Asset type: 'stock', 'etf', or 'crypto'",
+    "units":                 "Number of shares / coins / units you hold",
+    "amount_invested_eur":   "Total amount you paid in EUR (your cost basis)",
+    "avg_buying_price":      "Average price paid per unit in the asset's native currency (e.g. USD for NKE)"
   },
   "assets": [
     {
@@ -13,8 +14,106 @@
       "ticker":              "NKE",
       "type":                "stock",
       "units":               23,
-      "amount_invested_eur": 1466.69
+      "amount_invested_eur": 1466.69,
+      "avg_buying_price":    67.13
+    },
+    {
+      "name":                "ETHUSD",
+      "ticker":              "ETHUSD",
+      "type":                "crypto",
+      "units":               8.2700,
+      "amount_invested_eur": 12540.79,
+      "avg_buying_price":    1517.72
+    },
+    {
+      "name":                "Oscar Health",
+      "ticker":              "OSCR",
+      "type":                "stock",
+      "units":               116,
+      "amount_invested_eur": 1503.48,
+      "avg_buying_price":    14.89
+    },
+    {
+      "name":                "United Health",
+      "ticker":              "UNH",
+      "type":                "stock",
+      "units":               12.24,
+      "amount_invested_eur": 3053.73,
+      "avg_buying_price":    289.08
+    },
+    {
+      "name":                "JD.com",
+      "ticker":              "JD",
+      "type":                "stock",
+      "units":               35,
+      "amount_invested_eur": 1004.79,
+      "avg_buying_price":    33.78
+    },
+    {
+      "name":                "Circle Internet Group",
+      "ticker":              "CRCL",
+      "type":                "stock",
+      "units":               17.5,
+      "amount_invested_eur": 1508.95,
+      "avg_buying_price":    99.96
+    },
+    {
+      "name":                "Novo Nordisk",
+      "ticker":              "NVO",
+      "type":                "stock",
+      "units":               25,
+      "amount_invested_eur": 1027.40,
+      "avg_buying_price":    41.22
+    },
+    {
+      "name":                "Adobe",
+      "ticker":              "ADBE",
+      "type":                "stock",
+      "units":               3.3,
+      "amount_invested_eur": 981.76,
+      "avg_buying_price":    172.73
+    },
+    {
+      "name":                "SAP",
+      "ticker":              "SAP",
+      "type":                "stock",
+      "units":               6.9,
+      "amount_invested_eur": 1365.49,
+      "avg_buying_price":    198.77
+    },
+    {
+      "name":                "Draftkings",
+      "ticker":              "DKNG",
+      "type":                "stock",
+      "units":               34,
+      "amount_invested_eur": 994.40,
+      "avg_buying_price":    34.39
+    },
+    {
+      "name":                "Coinbase",
+      "ticker":              "COIN",
+      "type":                "stock",
+      "units":               5,
+      "amount_invested_eur": 995.03,
+      "avg_buying_price":    234
+    },
+    {
+      "name":                "PDD Holding",
+      "ticker":              "PDD",
+      "type":                "stock",
+      "units":               10,
+      "amount_invested_eur": 1037.99,
+      "avg_buying_price":    121.30
+    },
+    {
+      "name":                "NETFLIX",
+      "ticker":              "NFLX",
+      "type":                "stock",
+      "units":               20,
+      "amount_invested_eur": 1408.20,
+      "avg_buying_price":    82.45
     }
+
    
   ]
 }
