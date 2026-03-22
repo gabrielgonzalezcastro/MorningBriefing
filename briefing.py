@@ -5,8 +5,13 @@ import re
 import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from html import escape
+
+from section_portfolio import build_portfolio_section
+from section_ai        import fetch_ai_entries,     build_ai_section
+from section_dotnet    import fetch_dotnet_entries, build_dotnet_section
+from section_appian    import fetch_appian_entries, build_appian_section
 
 # ─── CONFIG ────────────────────────────────────────────────────────────────────
 
@@ -16,107 +21,7 @@ SMTP_LOGIN   = os.environ["BREVO_LOGIN"]
 SMTP_KEY     = os.environ["BREVO_KEY"]
 RECIPIENT    = "gabrielnoise@gmail.com"
 
-MAX_AI       = 10
-MAX_AI_DEV   = 5
-MAX_DOTNET   = 10
-MAX_APPIAN   = 10
 SUMMARY_LEN  = 160   # max chars for concise summaries
-
-# ─── RSS FEEDS ─────────────────────────────────────────────────────────────────
-
-AI_FEEDS = [
-    ("TechCrunch",         "https://techcrunch.com/category/artificial-intelligence/feed/"),
-    ("The Verge",          "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"),
-    ("VentureBeat",        "https://venturebeat.com/category/ai/feed/"),
-    ("Ars Technica",       "https://feeds.arstechnica.com/arstechnica/technology-lab"),
-    ("Wired",              "https://www.wired.com/feed/tag/ai/latest/rss"),
-    ("MIT Tech Review",    "https://www.technologyreview.com/feed/"),
-    ("The Register",       "https://www.theregister.com/headlines.atom"),
-]
-
-AI_DEV_FEEDS = [
-    ("LogRocket",              "https://blog.logrocket.com/feed/"),
-    ("The Pragmatic Engineer", "https://newsletter.pragmaticengineer.com/feed"),
-    ("SD Times",               "https://sdtimes.com/feed/"),
-    ("InfoQ",                  "https://www.infoq.com/ai/rss"),
-    ("Dev.to AI",              "https://dev.to/feed/tag/ai"),
-]
-
-DOTNET_FEEDS = [
-    ("MS .NET Blog",   "https://devblogs.microsoft.com/dotnet/feed/"),
-    ("MS DevBlogs",    "https://devblogs.microsoft.com/feed/"),
-    ("JetBrains .NET", "https://blog.jetbrains.com/dotnet/feed/"),
-    ("Hanselman",      "https://feeds.hanselman.com/ScottHanselman"),
-    (".NET Ketchup",   "https://dotnetketchup.com/feed"),
-]
-
-APPIAN_FEEDS = [
-    ("Appian Blog",          "https://appian.com/blog/rss.xml"),
-    ("Process Excellence",   "https://www.processexcellencenetwork.com/rss.xml"),
-    ("AIthority",            "https://aithority.com/feed/"),
-    ("InfoQ Architecture",   "https://www.infoq.com/architecture-design/rss"),
-    ("BPM Leader",           "https://bpmleader.com/feed/"),
-    ("No-Code Daily",        "https://www.nocode.tech/rss.xml"),
-    ("SD Times",             "https://sdtimes.com/feed/"),
-    ("Dev.to lowcode",       "https://dev.to/feed/tag/lowcode"),
-]
-
-# ─── DUBLIN EVENTS (static — update as needed) ─────────────────────────────────
-
-DUBLIN_AI_EVENTS = [
-    {
-        "title": "ICAIBR — International Conference on AI in Bioinformatics Research",
-        "url":   "https://internationalconferencealerts.com/ireland/artificial-intelligence",
-        "month": "Mar", "day": "31",
-        "tag":   "AI · Conference",
-        "desc":  "Dublin. Academic conference covering AI applications in bioinformatics research workflows.",
-    },
-    {
-        "title": "ICAIBWA — International Conference on AI in Bioinformatics Workflow Automation",
-        "url":   "https://internationalconferencealerts.com/ireland/artificial-intelligence",
-        "month": "Apr", "day": "3",
-        "tag":   "AI · Conference",
-        "desc":  "Dublin. Focused on automating bioinformatics workflows using AI and ML techniques.",
-    },
-    {
-        "title": "Dublin Tech Summit 2026",
-        "url":   "https://dublintechsummit.tech/",
-        "month": "May", "day": "27",
-        "tag":   "Tech · AI · Dev",
-        "desc":  "RDS Dublin, May 27–28. Covers AI, enterprise software, cybersecurity, fintech, and digital transformation.",
-    },
-    {
-        "title": "IAPP AI Governance Global Europe 2026",
-        "url":   "https://iapp.org/conference/iapp-ai-governance-global-europe/",
-        "month": "Jun", "day": "1",
-        "tag":   "AI · Governance",
-        "desc":  "Dublin, Jun 1–4. The premier European event on AI policy, regulation, and the EU AI Act.",
-    },
-    {
-        "title": "The Dublin AI Conference 2026",
-        "url":   "https://dublin.ie/whats-on/listings/the-dublin-ai-conference/",
-        "month": "TBC", "day": "—",
-        "tag":   "AI · Networking",
-        "desc":  "Gathers 400+ of Ireland's AI, business, and tech leaders for an evening of content and pre-arranged networking.",
-    },
-]
-
-DUBLIN_DOTNET_EVENTS = [
-    {
-        "title": "Dublin Tech Summit 2026",
-        "url":   "https://dublintechsummit.tech/",
-        "month": "May", "day": "27",
-        "tag":   "Tech · .NET · Dev",
-        "desc":  "RDS Dublin, May 27–28. Software development, cloud, and enterprise tech across all stacks.",
-    },
-    {
-        "title": ".NET Conf 2026 (Virtual — Watch from Dublin)",
-        "url":   "https://www.dotnetconf.net/",
-        "month": "Nov", "day": "TBC",
-        "tag":   ".NET · Virtual",
-        "desc":  "Microsoft's annual .NET conference. Free, virtual, and globally streamed — perfect for watching from home.",
-    },
-]
 
 # ─── LABEL DETECTION ───────────────────────────────────────────────────────────
 
@@ -165,27 +70,46 @@ def label_style(label):
 
 def fetch_entries(feeds, max_items, keyword=None):
     """
-    Fetch RSS entries from the given feeds.
+    Fetch RSS entries published yesterday.
+    Scans up to 50 entries per feed to find yesterday's articles.
     If `keyword` is provided, only entries whose title or summary contain it are kept.
     """
-    entries    = []
+    entries     = []
     seen_titles = set()
+    yesterday   = date.today() - timedelta(days=1)
 
     for source, url in feeds:
         try:
             feed = feedparser.parse(url)
-            for entry in feed.entries[:10]:
+            for entry in feed.entries[:50]:   # scan wider to find yesterday's articles
                 title = entry.get("title", "").strip()
                 if not title or title in seen_titles:
                     continue
 
+                # ── Date check first — skip anything not from yesterday ──────────
+                pub_date_obj = None
+                pub_date_str = ""
+                for attr in ("published_parsed", "updated_parsed"):
+                    val = getattr(entry, attr, None)
+                    if val:
+                        try:
+                            pub_date_obj = date(*val[:3])
+                            pub_date_str = datetime(*val[:6]).strftime("%b %-d, %Y")
+                            break
+                        except Exception:
+                            pass
+
+                if pub_date_obj != yesterday:
+                    continue   # skip articles with no date or not from yesterday
+
+                # ── Summary ──────────────────────────────────────────────────────
                 summary = entry.get("summary", entry.get("description", ""))
                 summary = re.sub(r"<[^>]+>", "", summary).strip()
                 summary = re.sub(r"\s+", " ", summary)
                 if len(summary) > SUMMARY_LEN:
                     summary = summary[:SUMMARY_LEN - 1].rsplit(" ", 1)[0] + "…"
 
-                # keyword filter (case-insensitive, supports pipe-separated OR terms)
+                # ── Keyword filter (pipe-separated OR terms) ──────────────────────
                 if keyword:
                     haystack = (title + " " + summary).lower()
                     terms = [t.strip() for t in keyword.split("|")]
@@ -193,25 +117,13 @@ def fetch_entries(feeds, max_items, keyword=None):
                         continue
 
                 seen_titles.add(title)
-
-                # Parse publish date
-                pub_date = ""
-                for attr in ("published_parsed", "updated_parsed"):
-                    val = getattr(entry, attr, None)
-                    if val:
-                        try:
-                            pub_date = datetime(*val[:6]).strftime("%b %-d, %Y")
-                            break
-                        except Exception:
-                            pass
-
                 entries.append({
                     "title":    title,
                     "url":      entry.get("link", "#"),
                     "summary":  summary,
                     "source":   source,
                     "label":    detect_label(title + " " + summary),
-                    "pub_date": pub_date,
+                    "pub_date": pub_date_str,
                 })
 
                 if len(entries) >= max_items:
@@ -287,33 +199,19 @@ def build_section(icon_cls, icon_char, h2_cls, title, section_id, body_html):
 def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
     today = datetime.now().strftime("%A, %B %-d, %Y")
 
-    # ── AI section ───────────────────────────────────────────────────────────
-    ai_body = build_subsection("Top Stories")
-    ai_body += "\n".join(build_card(e, "highlight-ai" if i == 0 else "")
-                         for i, e in enumerate(ai_entries))
-    if ai_dev_entries:
-        ai_body += "\n" + build_subsection("AI &amp; Software Development")
-        ai_body += "\n".join(build_card(e) for e in ai_dev_entries)
-    if DUBLIN_AI_EVENTS:
-        ai_body += "\n" + build_subsection("Dublin Events")
-        ai_body += "\n".join(build_event_card(e, i == 0)
-                             for i, e in enumerate(DUBLIN_AI_EVENTS))
-
-    # ── .NET section ─────────────────────────────────────────────────────────
-    dotnet_body = "\n".join(build_card(e, "highlight-dotnet" if i == 0 else "")
-                            for i, e in enumerate(dotnet_entries))
-    if DUBLIN_DOTNET_EVENTS:
-        dotnet_body += "\n" + build_subsection("Dublin Events")
-        dotnet_body += "\n".join(build_event_card(e, i == 0)
-                                 for i, e in enumerate(DUBLIN_DOTNET_EVENTS))
-
-    # ── Appian section ───────────────────────────────────────────────────────
-    appian_body = "\n".join(build_card(e, "highlight-appian" if i == 0 else "")
-                            for i, e in enumerate(appian_entries))
-
-    ai_section     = build_section("ai",     "&#x1F9E0;", "ai-title",     "Artificial Intelligence", "sec-ai",     ai_body)
-    dotnet_section = build_section("dotnet", "&#x2699;&#xFE0F;", "dotnet-title", ".NET &amp; C#",         "sec-dotnet", dotnet_body)
-    appian_section = build_section("appian", "&#x26A1;",  "appian-title", "Appian",                  "sec-appian", appian_body)
+    portfolio_section = build_portfolio_section(build_section)
+    ai_section        = build_ai_section(
+        ai_entries, ai_dev_entries,
+        build_card, build_subsection, build_event_card, build_section
+    )
+    dotnet_section    = build_dotnet_section(
+        dotnet_entries,
+        build_card, build_subsection, build_event_card, build_section
+    )
+    appian_section    = build_appian_section(
+        appian_entries,
+        build_card, build_section
+    )
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -326,11 +224,12 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   :root {{
     --bg:#0f0f13;--surface:#18181f;--border:#2a2a38;--text:#e8e8ed;
     --text-muted:#8888a0;
+    --accent-portfolio:#f59e0b;--accent-portfolio-dim:rgba(245,158,11,0.12);
     --accent-ai:#a78bfa;--accent-ai-dim:rgba(167,139,250,0.12);
     --accent-dotnet:#60a5fa;--accent-dotnet-dim:rgba(96,165,250,0.12);
     --accent-appian:#06b6d4;--accent-appian-dim:rgba(6,182,212,0.12);
     --accent-event:#fb923c;--accent-event-dim:rgba(251,146,60,0.12);
-    --accent-green:#34d399;
+    --accent-green:#34d399;--accent-red:#f87171;
   }}
   *{{margin:0;padding:0;box-sizing:border-box}}
   body{{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}}
@@ -345,10 +244,12 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   .section-header{{display:flex;align-items:center;gap:14px;margin-bottom:20px;margin-top:52px;cursor:pointer;user-select:none}}
   .section-header:hover .chevron{{opacity:1}}
   .section-icon{{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}}
+  .section-icon.portfolio{{background:var(--accent-portfolio-dim)}}
   .section-icon.ai{{background:var(--accent-ai-dim)}}
   .section-icon.dotnet{{background:var(--accent-dotnet-dim)}}
   .section-icon.appian{{background:var(--accent-appian-dim)}}
   .section-header h2{{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;flex:1}}
+  .section-header h2.portfolio-title{{color:var(--accent-portfolio)}}
   .section-header h2.ai-title{{color:var(--accent-ai)}}
   .section-header h2.dotnet-title{{color:var(--accent-dotnet)}}
   .section-header h2.appian-title{{color:var(--accent-appian)}}
@@ -392,12 +293,34 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   .divider{{height:1px;background:var(--border);margin:48px 0}}
   .footer{{text-align:center;padding-top:32px;border-top:1px solid var(--border);margin-top:56px}}
   .footer p{{font-size:12px;color:#444460}}
+  /* Portfolio table */
+  .pf-table{{border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:8px}}
+  .pf-header-row,.pf-row,.pf-total-row{{display:grid;grid-template-columns:2.2fr 1fr 0.9fr 1.1fr 1.1fr 0.9fr;align-items:center}}
+  .pf-header-row{{background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);padding:10px 18px}}
+  .pf-cell-hdr{{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);text-align:right}}
+  .pf-asset-hdr{{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted)}}
+  .pf-row{{padding:14px 18px;border-bottom:1px solid rgba(42,42,56,0.7);transition:background 0.15s}}
+  .pf-row:last-of-type{{border-bottom:none}}
+  .pf-row:hover{{background:rgba(255,255,255,0.02)}}
+  .pf-total-row{{padding:12px 18px;background:rgba(245,158,11,0.07);border-top:1px solid var(--border)}}
+  .pf-asset-cell{{display:flex;align-items:center;gap:10px}}
+  .pf-name{{font-size:14px;font-weight:600;color:var(--text)}}
+  .pf-ticker{{font-size:11px;color:var(--text-muted);margin-top:2px}}
+  .pf-cell{{font-size:13px;font-weight:500;text-align:right;color:var(--text)}}
+  .pf-badge{{display:inline-block;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 7px;border-radius:4px;white-space:nowrap}}
+  .pf-badge-stock{{background:rgba(96,165,250,0.15);color:#60a5fa}}
+  .pf-badge-etf{{background:rgba(52,211,153,0.15);color:#34d399}}
+  .pf-badge-crypto{{background:rgba(167,139,250,0.15);color:#a78bfa}}
+  .pf-pos{{color:var(--accent-green)!important}}
+  .pf-neg{{color:var(--accent-red)!important}}
   @keyframes fadeUp{{from{{opacity:0;transform:translateY(12px)}}to{{opacity:1;transform:translateY(0)}}}}
   @media(max-width:600px){{
     .container{{padding:24px 16px 60px}}
     .card{{padding:16px 18px}}
     .card-top{{flex-direction:column;gap:6px}}
     .event-card{{flex-direction:column;gap:12px}}
+    .pf-header-row,.pf-row,.pf-total-row{{grid-template-columns:1.8fr 0.9fr 0.8fr 1fr 1fr 0.8fr;font-size:11px}}
+    .pf-header-row,.pf-row,.pf-total-row{{padding:10px 12px}}
   }}
 </style>
 </head>
@@ -408,6 +331,10 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
     <h1>Morning Briefing</h1>
     <p class="header-date">{today} &mdash; Dublin, Ireland &bull; <span>Live</span></p>
   </header>
+
+{portfolio_section}
+
+  <div class="divider"></div>
 
 {ai_section}
 
@@ -453,21 +380,18 @@ def send_email(html_content):
 # ─── MAIN ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    print("📡 Fetching AI news...")
-    ai_entries = fetch_entries(AI_FEEDS, MAX_AI)
-    print(f"   Got {len(ai_entries)} articles")
+    print("💼 Loading portfolio...")
 
-    print("📡 Fetching AI dev news...")
-    ai_dev_entries = fetch_entries(AI_DEV_FEEDS, MAX_AI_DEV)
-    print(f"   Got {len(ai_dev_entries)} articles")
+    print("📡 Fetching AI news...")
+    ai_entries, ai_dev_entries = fetch_ai_entries(fetch_entries)
+    print(f"   Got {len(ai_entries)} articles (top) + {len(ai_dev_entries)} (dev)")
 
     print("📡 Fetching .NET news...")
-    dotnet_entries = fetch_entries(DOTNET_FEEDS, MAX_DOTNET)
+    dotnet_entries = fetch_dotnet_entries(fetch_entries)
     print(f"   Got {len(dotnet_entries)} articles")
 
     print("📡 Fetching Appian news...")
-    # keyword tuple: entry must match at least one of these terms
-    appian_entries = fetch_entries(APPIAN_FEEDS, MAX_APPIAN, keyword="appian|low-code|lowcode|no-code|bpm|process automation")
+    appian_entries = fetch_appian_entries(fetch_entries)
     print(f"   Got {len(appian_entries)} articles")
 
     print("🔨 Building HTML...")
