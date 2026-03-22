@@ -364,18 +364,34 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
 # ─── EMAIL SENDER ──────────────────────────────────────────────────────────────
 
 def send_email(html_content):
-    today = datetime.now().strftime("%A, %B %-d, %Y")
-    msg = MIMEMultipart("alternative")
+    today      = datetime.now().strftime("%A, %B %-d, %Y")
+    today_file = datetime.now().strftime("%Y-%m-%d")
+
+    # Outer wrapper — "mixed" allows both a rendered body and file attachments
+    msg = MIMEMultipart("mixed")
     msg["Subject"] = f"☕ Morning Briefing — {today}"
     msg["From"]    = "Gabo's Briefing <gabrielnoise@gmail.com>"
     msg["To"]      = RECIPIENT
-    msg.attach(MIMEText(html_content, "html"))
+
+    # ── Inline HTML body ─────────────────────────────────────────────────────
+    body = MIMEMultipart("alternative")
+    body.attach(MIMEText(html_content, "html"))
+    msg.attach(body)
+
+    # ── HTML file attachment ─────────────────────────────────────────────────
+    attachment = MIMEText(html_content, "html")
+    attachment.add_header(
+        "Content-Disposition", "attachment",
+        filename=f"morning-briefing-{today_file}.html"
+    )
+    msg.attach(attachment)
+
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         server.ehlo()
         server.starttls()
         server.login(SMTP_LOGIN, SMTP_KEY)
         server.sendmail(SMTP_LOGIN, RECIPIENT, msg.as_string())
-    print(f"✅ Email sent to {RECIPIENT}")
+    print(f"✅ Email sent to {RECIPIENT} (with HTML attachment)")
 
 # ─── MAIN ──────────────────────────────────────────────────────────────────────
 
