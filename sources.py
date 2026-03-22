@@ -104,6 +104,19 @@ FINANCIAL_INDICATORS = [
     ("JAM",            "JAM.L",     "trust"),
 ]
 
+# ─── TWITTER / X ACCOUNTS ──────────────────────────────────────────────────────
+# Accounts whose latest tweets appear in the Financials → "Latest Tweets" subsection.
+# Add or remove handles (without the @) as you like.
+
+TWITTER_ACCOUNTS = [
+    "DrProfitCrypto",
+    "CryptoCapo_",
+    "PeterLBrandt",
+    "RaoulGMI",
+    "zerohedge",
+    "MacroAlf",
+]
+
 # ─── APPIAN FEEDS ──────────────────────────────────────────────────────────────
 
 APPIAN_FEEDS = [

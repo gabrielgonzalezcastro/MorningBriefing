@@ -201,7 +201,7 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
     today = datetime.now().strftime("%A, %B %-d, %Y")
 
     portfolio_section   = build_portfolio_section(build_section)
-    financials_section  = build_financials_section(build_section)
+    financials_section  = build_financials_section(build_section, build_subsection)
     ai_section          = build_ai_section(
         ai_entries, ai_dev_entries,
         build_card, build_subsection, build_event_card, build_section
@@ -341,6 +341,15 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   .fin-badge-bond{{background:rgba(244,114,182,0.15);color:#f472b6}}
   .fin-pos{{color:var(--accent-green)!important}}
   .fin-neg{{color:var(--accent-red)!important}}
+  /* ── Tweet cards ── */
+  .tweet-card{{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:10px}}
+  .tweet-header{{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap}}
+  .tweet-name{{font-weight:700;color:var(--text-primary);font-size:13px}}
+  .tweet-handle{{color:var(--text-muted);font-size:12px}}
+  .tweet-date{{color:var(--text-muted);font-size:11px;margin-left:auto}}
+  .tweet-body{{color:var(--text-secondary);font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word}}
+  .tweet-link{{display:inline-block;margin-top:10px;font-size:11px;color:var(--accent-financials);text-decoration:none;opacity:.8}}
+  .tweet-link:hover{{opacity:1}}
   @keyframes fadeUp{{from{{opacity:0;transform:translateY(12px)}}to{{opacity:1;transform:translateY(0)}}}}
   @media(max-width:600px){{
     .container{{padding:24px 16px 60px}}
