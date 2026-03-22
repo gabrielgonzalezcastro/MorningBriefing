@@ -19,7 +19,7 @@
     },
     {
       "name":                "ETH",
-      "ticker":              "ETH",
+      "ticker":              "ETH-USD",
       "type":                "crypto",
       "units":               8.2700,
       "amount_invested_eur": 12540.79,
