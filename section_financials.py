@@ -247,7 +247,7 @@ def build_tweets_subsection(build_subsection):
     """Fetch tweets and return the HTML subsection, or empty string if none."""
     tweets = fetch_latest_tweets()
     if not tweets:
-        return ""
+        return "No Tweets"
 
     html  = build_subsection("Latest Tweets")
     html += "\n".join(_tweet_card(t) for t in tweets)
