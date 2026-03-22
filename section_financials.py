@@ -4,9 +4,8 @@
 # a compact dashboard table in the morning briefing.
 
 from html import escape
-from datetime import date, timedelta
 
-from sources import FINANCIAL_INDICATORS, TWITTER_ACCOUNTS
+from sources import FINANCIAL_INDICATORS
 
 try:
     import yfinance as yf
@@ -14,13 +13,6 @@ try:
 except ImportError:
     YF_AVAILABLE = False
     print("  Warning: yfinance not installed. Run: pip install yfinance")
-
-try:
-    from ntscraper import Nitter
-    NT_AVAILABLE = True
-except ImportError:
-    NT_AVAILABLE = False
-    print("  Warning: ntscraper not installed. Run: pip install ntscraper")
 
 # ─── CURRENCY / FORMATTING RULES ────────────────────────────────────────────────
 
@@ -131,13 +123,12 @@ def _indicator_row(ind):
   </div>"""
 
 
-def build_financials_section(build_section, build_subsection):
+def build_financials_section(build_section):
     """Fetch all indicators and render the Financials HTML section."""
     indicators = fetch_indicators()
     rows_html  = "\n".join(_indicator_row(ind) for ind in indicators)
 
-    body = build_subsection("Market Indicators")
-    body += f"""\
+    body = f"""\
   <div class="fin-table">
     <div class="fin-header-row">
       <div class="fin-name-hdr">Indicator</div>
@@ -147,108 +138,8 @@ def build_financials_section(build_section, build_subsection):
 {rows_html}
   </div>"""
 
-    tweets_html = build_tweets_subsection(build_subsection)
-    if tweets_html:
-        body += "\n" + tweets_html
-
     return build_section(
         "financials", "&#x1F4CA;", "financials-title",
         "Financials", "sec-financials",
         body
     )
-
-
-# ─── TWEETS ──────────────────────────────────────────────────────────────────
-
-def fetch_latest_tweets(accounts=TWITTER_ACCOUNTS, max_per_account=3):
-    """
-    Fetch the latest tweets for each account in `accounts` using ntscraper.
-    Returns a list of dicts: { handle, display_name, text, date, url }
-    Only tweets from today or yesterday are included.
-    """
-    if not NT_AVAILABLE:
-        return []
-
-    results  = []
-    cutoff   = date.today() - timedelta(days=1)
-
-    try:
-        scraper = Nitter(log_level=1, skip_instance_check=False)
-    except Exception as e:
-        print(f"  Warning: could not initialise Nitter scraper: {e}")
-        return []
-
-    for handle in accounts:
-        try:
-            data = scraper.get_tweets(handle, mode="user", number=max_per_account)
-            for tweet in (data.get("tweets") or []):
-                # ntscraper tweet keys: text, date, link, user (dict)
-                raw_date = tweet.get("date", "")
-                try:
-                    # ntscraper returns dates like "Mar 22, 2026 · 9:14 AM UTC"
-                    tweet_date = _parse_tweet_date(raw_date)
-                except Exception:
-                    tweet_date = None
-
-                if tweet_date and tweet_date < cutoff:
-                    continue  # skip old tweets
-
-                user_info    = tweet.get("user") or {}
-                display_name = escape(user_info.get("name") or handle)
-                text         = escape(tweet.get("text") or "")
-                link         = tweet.get("link") or f"https://x.com/{handle}"
-
-                results.append({
-                    "handle":       handle,
-                    "display_name": display_name,
-                    "text":         text,
-                    "date":         raw_date,
-                    "url":          link,
-                })
-        except Exception as e:
-            print(f"  Warning: could not fetch tweets for @{handle}: {e}")
-
-    return results
-
-
-def _parse_tweet_date(raw: str) -> date:
-    """Parse ntscraper date string like 'Mar 22, 2026 · 9:14 AM UTC' into a date."""
-    # Strip the time part after ' · '
-    raw = raw.split("·")[0].strip()
-    from datetime import datetime
-    for fmt in ("%b %d, %Y", "%B %d, %Y"):
-        try:
-            return datetime.strptime(raw, fmt).date()
-        except ValueError:
-            continue
-    raise ValueError(f"Cannot parse date: {raw!r}")
-
-
-def _tweet_card(tweet):
-    handle       = escape(tweet["handle"])
-    display_name = tweet["display_name"]
-    text         = tweet["text"]
-    url          = tweet["url"]
-    date_str     = escape(tweet["date"])
-
-    return f"""\
-  <div class="tweet-card">
-    <div class="tweet-header">
-      <span class="tweet-name">{display_name}</span>
-      <span class="tweet-handle">@{handle}</span>
-      <span class="tweet-date">{date_str}</span>
-    </div>
-    <div class="tweet-body">{text}</div>
-    <a class="tweet-link" href="{url}" target="_blank">View on X ↗</a>
-  </div>"""
-
-
-def build_tweets_subsection(build_subsection):
-    """Fetch tweets and return the HTML subsection, or empty string if none."""
-    tweets = fetch_latest_tweets()
-    if not tweets:
-        return "No Tweets"
-
-    html  = build_subsection("Latest Tweets")
-    html += "\n".join(_tweet_card(t) for t in tweets)
-    return html

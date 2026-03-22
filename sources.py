@@ -8,10 +8,11 @@ AI_FEEDS = [
     ("TechCrunch",         "https://techcrunch.com/category/artificial-intelligence/feed/"),
     ("The Verge",          "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"),
     ("VentureBeat",        "https://venturebeat.com/category/ai/feed/"),
-    ("Ars Technica",       "https://feeds.arstechnica.com/arstechnica/technology-lab"),
     ("Wired",              "https://www.wired.com/feed/tag/ai/latest/rss"),
-    ("MIT Tech Review",    "https://www.technologyreview.com/feed/"),
-    ("The Register",       "https://www.theregister.com/headlines.atom"),
+    ("Zdnet",              "https://www.zdnet.com/topic/artificial-intelligence/rss.xml"),
+    ("Financial Times", "https://www.ft.com/artificial-intelligence?format=rss"),
+    ("AINEWS",              "https://www.artificialintelligence-news.com/feed/"),
+
 ]
 
 AI_DEV_FEEDS = [
@@ -26,10 +27,10 @@ AI_DEV_FEEDS = [
 
 DOTNET_FEEDS = [
     ("MS .NET Blog",   "https://devblogs.microsoft.com/dotnet/feed/"),
-    ("MS DevBlogs",    "https://devblogs.microsoft.com/feed/"),
-    ("JetBrains .NET", "https://blog.jetbrains.com/dotnet/feed/"),
-    ("Hanselman",      "https://feeds.hanselman.com/ScottHanselman"),
+    ("MS DevBlogs",    "https://devblogs.microsoft.com/feed/"),    
     (".NET Ketchup",   "https://dotnetketchup.com/feed"),
+    (".NET Ramblings",   "https://www.dotnetramblings.com/index.xml"),
+
 ]
 
 # ─── DUBLIN AI EVENT FEEDS ─────────────────────────────────────────────────────
@@ -72,6 +73,20 @@ DOTNET_EVENT_KEYWORDS = [
     "azure", "microsoft", "ef core", "entity framework", "rider", "visual studio",
 ]
 
+# ─── FINANCIAL NEWS FEEDS ──────────────────────────────────────────────────────
+# Add your financial news RSS sources here.
+
+FINANCIAL_NEWS_FEEDS = [
+    # Add sources here, e.g.:
+    ("CNBC Finance",     "https://www.cnbc.com/id/10000664/device/rss/rss.html"),
+     ("Seeking Alpha",    "https://seekingalpha.com/feed.xml"),
+     ("BitFinanzas",    "https://bitfinanzas.com/feed"),
+     ("Cointelegraph",    "https://cointelegraph.com/rss"),
+     ("MorningStar",    "https://global.morningstar.com/es/mercados"),
+     ("Bitcoinist",    "https://bitcoinist.com/category/ethereum/feed/"),
+
+]
+
 # ─── FINANCIAL INDICATORS ──────────────────────────────────────────────────────
 # Tickers shown in the Financials section.
 # Format: (display name, Yahoo Finance ticker, category)
@@ -102,31 +117,5 @@ FINANCIAL_INDICATORS = [
     ("FCIT",           "FCIT.L",    "trust"),
     ("PCT",            "PCT.L",     "trust"),
     ("JAM",            "JAM.L",     "trust"),
-]
-
-# ─── TWITTER / X ACCOUNTS ──────────────────────────────────────────────────────
-# Accounts whose latest tweets appear in the Financials → "Latest Tweets" subsection.
-# Add or remove handles (without the @) as you like.
-
-TWITTER_ACCOUNTS = [
-    "DrProfitCrypto",
-    "CryptoCapo_",
-    "PeterLBrandt",
-    "RaoulGMI",
-    "zerohedge",
-    "MacroAlf",
-]
-
-# ─── APPIAN FEEDS ──────────────────────────────────────────────────────────────
-
-APPIAN_FEEDS = [
-    ("Appian Blog",          "https://appian.com/blog/rss.xml"),
-    ("Process Excellence",   "https://www.processexcellencenetwork.com/rss.xml"),
-    ("AIthority",            "https://aithority.com/feed/"),
-    ("InfoQ Architecture",   "https://www.infoq.com/architecture-design/rss"),
-    ("BPM Leader",           "https://bpmleader.com/feed/"),
-    ("No-Code Daily",        "https://www.nocode.tech/rss.xml"),
-    ("SD Times",             "https://sdtimes.com/feed/"),
-    ("Dev.to lowcode",       "https://dev.to/feed/tag/lowcode"),
 ]
 

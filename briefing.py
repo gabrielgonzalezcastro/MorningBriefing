@@ -11,8 +11,8 @@ from html import escape
 from section_portfolio  import build_portfolio_section
 from section_financials import build_financials_section
 from section_ai         import fetch_ai_entries,     build_ai_section
-from section_dotnet     import fetch_dotnet_entries, build_dotnet_section
-from section_appian     import fetch_appian_entries, build_appian_section
+from section_dotnet          import fetch_dotnet_entries,          build_dotnet_section
+from section_financial_news  import fetch_financial_news_entries,  build_financial_news_section
 
 # ─── CONFIG ────────────────────────────────────────────────────────────────────
 
@@ -197,11 +197,15 @@ def build_section(icon_cls, icon_char, h2_cls, title, section_id, body_html):
 
 # ─── HTML BUILDER ──────────────────────────────────────────────────────────────
 
-def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
+def build_html(ai_entries, ai_dev_entries, dotnet_entries, financial_news_entries):
     today = datetime.now().strftime("%A, %B %-d, %Y")
 
-    portfolio_section   = build_portfolio_section(build_section)
-    financials_section  = build_financials_section(build_section, build_subsection)
+    portfolio_section      = build_portfolio_section(build_section)
+    financials_section     = build_financials_section(build_section)
+    financial_news_section = build_financial_news_section(
+        financial_news_entries,
+        build_card, build_section
+    )
     ai_section          = build_ai_section(
         ai_entries, ai_dev_entries,
         build_card, build_subsection, build_event_card, build_section
@@ -210,11 +214,6 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
         dotnet_entries,
         build_card, build_subsection, build_event_card, build_section
     )
-    appian_section    = build_appian_section(
-        appian_entries,
-        build_card, build_section
-    )
-
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -230,7 +229,7 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
     --accent-financials:#22d3ee;--accent-financials-dim:rgba(34,211,238,0.12);
     --accent-ai:#a78bfa;--accent-ai-dim:rgba(167,139,250,0.12);
     --accent-dotnet:#60a5fa;--accent-dotnet-dim:rgba(96,165,250,0.12);
-    --accent-appian:#06b6d4;--accent-appian-dim:rgba(6,182,212,0.12);
+    --accent-financial-news:#4ade80;--accent-financial-news-dim:rgba(74,222,128,0.12);
     --accent-event:#fb923c;--accent-event-dim:rgba(251,146,60,0.12);
     --accent-green:#34d399;--accent-red:#f87171;
   }}
@@ -251,14 +250,14 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   .section-icon.financials{{background:var(--accent-financials-dim)}}
   .section-icon.ai{{background:var(--accent-ai-dim)}}
   .section-icon.dotnet{{background:var(--accent-dotnet-dim)}}
-  .section-icon.appian{{background:var(--accent-appian-dim)}}
-  .section-header h2{{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;flex:1}}
+  .section-icon.financial-news{{background:var(--accent-financial-news-dim)}}
+.section-header h2{{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;flex:1}}
   .section-header h2.portfolio-title{{color:var(--accent-portfolio)}}
   .section-header h2.financials-title{{color:var(--accent-financials)}}
   .section-header h2.ai-title{{color:var(--accent-ai)}}
   .section-header h2.dotnet-title{{color:var(--accent-dotnet)}}
-  .section-header h2.appian-title{{color:var(--accent-appian)}}
-  .chevron{{width:28px;height:28px;border-radius:8px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.6;transition:opacity 0.2s}}
+  .section-header h2.financial-news-title{{color:var(--accent-financial-news)}}
+.chevron{{width:28px;height:28px;border-radius:8px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.6;transition:opacity 0.2s}}
   .chevron svg{{transition:transform 0.3s ease}}
   .section-header.collapsed .chevron svg{{transform:rotate(-90deg)}}
   .section-body{{overflow:hidden;transition:max-height 0.4s ease,opacity 0.3s ease;max-height:9999px;opacity:1}}
@@ -281,8 +280,8 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   .card .source a:hover{{color:#9090b8;text-decoration:underline}}
   .card.highlight-ai{{border-color:rgba(167,139,250,0.3);background:linear-gradient(135deg,rgba(167,139,250,0.07) 0%,var(--surface) 100%)}}
   .card.highlight-dotnet{{border-color:rgba(96,165,250,0.3);background:linear-gradient(135deg,rgba(96,165,250,0.07) 0%,var(--surface) 100%)}}
-  .card.highlight-appian{{border-color:rgba(6,182,212,0.3);background:linear-gradient(135deg,rgba(6,182,212,0.07) 0%,var(--surface) 100%)}}
-  /* Event cards */
+  .card.highlight-financial-news{{border-color:rgba(74,222,128,0.3);background:linear-gradient(135deg,rgba(74,222,128,0.07) 0%,var(--surface) 100%)}}
+/* Event cards */
   .event-card{{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 22px;margin-bottom:10px;display:flex;gap:18px;align-items:flex-start;transition:border-color 0.2s,transform 0.2s;animation:fadeUp 0.4s ease both}}
   .event-card:hover{{border-color:rgba(251,146,60,0.3);transform:translateY(-1px)}}
   .event-card.highlight-event{{border-color:rgba(251,146,60,0.3);background:linear-gradient(135deg,rgba(251,146,60,0.07) 0%,var(--surface) 100%)}}
@@ -341,15 +340,6 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
   .fin-badge-bond{{background:rgba(244,114,182,0.15);color:#f472b6}}
   .fin-pos{{color:var(--accent-green)!important}}
   .fin-neg{{color:var(--accent-red)!important}}
-  /* ── Tweet cards ── */
-  .tweet-card{{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:10px}}
-  .tweet-header{{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap}}
-  .tweet-name{{font-weight:700;color:var(--text-primary);font-size:13px}}
-  .tweet-handle{{color:var(--text-muted);font-size:12px}}
-  .tweet-date{{color:var(--text-muted);font-size:11px;margin-left:auto}}
-  .tweet-body{{color:var(--text-secondary);font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word}}
-  .tweet-link{{display:inline-block;margin-top:10px;font-size:11px;color:var(--accent-financials);text-decoration:none;opacity:.8}}
-  .tweet-link:hover{{opacity:1}}
   @keyframes fadeUp{{from{{opacity:0;transform:translateY(12px)}}to{{opacity:1;transform:translateY(0)}}}}
   @media(max-width:600px){{
     .container{{padding:24px 16px 60px}}
@@ -377,15 +367,15 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries):
 
   <div class="divider"></div>
 
+{financial_news_section}
+
+  <div class="divider"></div>
+
 {ai_section}
 
   <div class="divider"></div>
 
 {dotnet_section}
-
-  <div class="divider"></div>
-
-{appian_section}
 
   <footer class="footer">
     <p>Gabo's Morning Briefing &bull; Auto-generated on {today} &bull; Powered by Claude</p>
@@ -447,12 +437,12 @@ if __name__ == "__main__":
     dotnet_entries = fetch_dotnet_entries(fetch_entries)
     print(f"   Got {len(dotnet_entries)} articles")
 
-    print("📡 Fetching Appian news...")
-    appian_entries = fetch_appian_entries(fetch_entries)
-    print(f"   Got {len(appian_entries)} articles")
+    print("📡 Fetching Financial news...")
+    financial_news_entries = fetch_financial_news_entries(fetch_entries)
+    print(f"   Got {len(financial_news_entries)} articles")
 
     print("🔨 Building HTML...")
-    html_content = build_html(ai_entries, ai_dev_entries, dotnet_entries, appian_entries)
+    html_content = build_html(ai_entries, ai_dev_entries, dotnet_entries, financial_news_entries)
 
     print("📧 Sending email...")
     send_email(html_content)

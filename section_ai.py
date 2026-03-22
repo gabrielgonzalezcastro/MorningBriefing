@@ -39,6 +39,6 @@ def build_ai_section(ai_entries, ai_dev_entries,
 
     return build_section(
         "ai", "&#x1F9E0;", "ai-title",
-        "Artificial Intelligence Test", "sec-ai",
+        "Artificial Intelligence", "sec-ai",
         body
     )
