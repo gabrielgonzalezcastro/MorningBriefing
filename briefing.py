@@ -444,5 +444,11 @@ if __name__ == "__main__":
     print("🔨 Building HTML...")
     html_content = build_html(ai_entries, ai_dev_entries, dotnet_entries, financial_news_entries)
 
+    today_file = datetime.now().strftime("%Y-%m-%d")
+    output_filename = f"briefing-{today_file}.html"
+    with open(output_filename, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    print(f"💾 HTML saved to {output_filename}")
+
     print("📧 Sending email...")
     send_email(html_content)
