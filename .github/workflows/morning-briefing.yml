@@ -27,3 +27,10 @@ jobs:
           BREVO_LOGIN: ${{ secrets.BREVO_LOGIN }}
           BREVO_KEY: ${{ secrets.BREVO_KEY }}
         run: python briefing.py
+
+      - name: Upload HTML artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: morning-briefing-${{ github.run_id }}
+          path: briefing-*.html
+          retention-days: 30
