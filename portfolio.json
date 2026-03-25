@@ -50,12 +50,12 @@
       "avg_buying_price":    33.78
     },
     {
-      "name":                "Circle Internet Group",
-      "ticker":              "CRCL",
+      "name":                "Microsoft",
+      "ticker":              "MSFT",
       "type":                "stock",
-      "units":               17.5,
-      "amount_invested_eur": 1508.95,
-      "avg_buying_price":    99.96
+      "units":               7,
+      "amount_invested_eur": 2261.54,
+      "avg_buying_price":    373.80
     },
     {
       "name":                "Novo Nordisk",
