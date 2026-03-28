@@ -53,9 +53,9 @@
       "name":                "Microsoft",
       "ticker":              "MSFT",
       "type":                "stock",
-      "units":               7,
-      "amount_invested_eur": 2261.54,
-      "avg_buying_price":    373.80
+      "units":               10,
+      "amount_invested_eur": 3089.98,
+      "avg_buying_price":    369.86
     },
     {
       "name":                "Novo Nordisk",
