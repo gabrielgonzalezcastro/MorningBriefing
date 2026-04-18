@@ -208,32 +208,26 @@ def _asset_row(row):
   </div>"""
 
 
-def build_portfolio_section(build_section):
-    """
-    Load portfolio.json → fetch live prices → compute P&L → render HTML section.
-    """
-    assets = load_portfolio()
-    prices = fetch_prices(assets)
-    rows   = [compute_pnl(a, prices.get(a["ticker"], {})) for a in assets]
+def _subtotal_row(label, group_rows):
+    invested = sum(float(r.get("amount_invested_eur") or 0) for r in group_rows)
+    value    = sum(r["current_value"] for r in group_rows if r["current_value"] is not None)
+    pnl_eur  = (value - invested) if value else None
+    pnl_pct  = ((pnl_eur / invested * 100) if (pnl_eur is not None and invested) else None)
+    cls      = _cls(pnl_eur)
+    return f"""\
+    <div class="pf-total-row">
+      <div class="pf-asset-hdr">{label}</div>
+      <div class="pf-cell-hdr"></div>
+      <div class="pf-cell-hdr"></div>
+      <div class="pf-cell-hdr">{_eur(value)}</div>
+      <div class="pf-cell-hdr"></div>
+      <div class="pf-cell-hdr {cls}">{_eur(pnl_eur, sign=True)}</div>
+      <div class="pf-cell-hdr {cls}">{_pct(pnl_pct)}</div>
+    </div>"""
 
-    # ── Portfolio totals ─────────────────────────────────────────────────────
-    total_invested = sum(
-        float(r.get("amount_invested_eur") or 0) for r in rows
-    )
-    total_value = sum(
-        r["current_value"] for r in rows if r["current_value"] is not None
-    )
-    total_pnl_eur = (total_value - total_invested) if total_value else None
-    total_pnl_pct = (
-        (total_pnl_eur / total_invested * 100)
-        if (total_pnl_eur is not None and total_invested)
-        else None
-    )
-    total_cls = _cls(total_pnl_eur)
 
-    rows_html = "\n".join(_asset_row(r) for r in rows)
-
-    body = f"""\
+def _table_html(group_rows, label):
+    header = """\
   <div class="pf-table">
     <div class="pf-header-row">
       <div class="pf-asset-hdr">Asset</div>
@@ -243,18 +237,32 @@ def build_portfolio_section(build_section):
       <div class="pf-cell-hdr">Avg. Buy Price</div>
       <div class="pf-cell-hdr">P&amp;L (EUR)</div>
       <div class="pf-cell-hdr">P&amp;L %</div>
-    </div>
-{rows_html}
-    <div class="pf-total-row">
-      <div class="pf-asset-hdr">Total Portfolio</div>
-      <div class="pf-cell-hdr"></div>
-      <div class="pf-cell-hdr"></div>
-      <div class="pf-cell-hdr">{_eur(total_value)}</div>
-      <div class="pf-cell-hdr"></div>
-      <div class="pf-cell-hdr {total_cls}">{_eur(total_pnl_eur, sign=True)}</div>
-      <div class="pf-cell-hdr {total_cls}">{_pct(total_pnl_pct)}</div>
-    </div>
-  </div>"""
+    </div>"""
+    rows_html = "\n".join(_asset_row(r) for r in group_rows)
+    subtotal  = _subtotal_row(label, group_rows)
+    return f"{header}\n{rows_html}\n{subtotal}\n  </div>"
+
+
+def build_portfolio_section(build_section):
+    """
+    Load portfolio.json → fetch live prices → compute P&L → render HTML section.
+    """
+    assets = load_portfolio()
+    prices = fetch_prices(assets)
+    rows   = [compute_pnl(a, prices.get(a["ticker"], {})) for a in assets]
+
+    stocks  = [r for r in rows if r.get("type", "stock").lower() != "crypto"]
+    cryptos = [r for r in rows if r.get("type", "stock").lower() == "crypto"]
+
+    parts = []
+    if stocks:
+        parts.append('<h3 class="pf-group-title">Stocks &amp; ETFs</h3>')
+        parts.append(_table_html(stocks, "Subtotal — Stocks &amp; ETFs"))
+    if cryptos:
+        parts.append('<h3 class="pf-group-title">Crypto</h3>')
+        parts.append(_table_html(cryptos, "Subtotal — Crypto"))
+
+    body = "\n".join(parts)
 
     return build_section(
         "portfolio", "&#x1F4C8;", "portfolio-title",

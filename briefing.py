@@ -95,7 +95,7 @@ def fetch_entries(feeds, max_items, keyword=None):
                     if val:
                         try:
                             pub_date_obj = date(*val[:3])
-                            pub_date_str = datetime(*val[:6]).strftime("%b %-d, %Y")
+                            pub_date_str = datetime(*val[:6]).strftime("%b %#d, %Y")
                             break
                         except Exception:
                             pass
@@ -198,7 +198,7 @@ def build_section(icon_cls, icon_char, h2_cls, title, section_id, body_html):
 # ─── HTML BUILDER ──────────────────────────────────────────────────────────────
 
 def build_html(ai_entries, ai_dev_entries, dotnet_entries, financial_news_entries):
-    today = datetime.now().strftime("%A, %B %-d, %Y")
+    today = datetime.now().strftime("%A, %B %#d, %Y")
 
     portfolio_section      = build_portfolio_section(build_section)
     financials_section     = build_financials_section(build_section)
@@ -298,6 +298,7 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, financial_news_entrie
   .footer{{text-align:center;padding-top:32px;border-top:1px solid var(--border);margin-top:56px}}
   .footer p{{font-size:12px;color:#444460}}
   /* Portfolio table */
+  .pf-group-title{{margin:18px 0 6px;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}}
   .pf-table{{border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:8px}}
   .pf-header-row,.pf-row,.pf-total-row{{display:grid;grid-template-columns:2fr 0.9fr 0.8fr 1fr 1fr 1fr 0.8fr;align-items:center}}
   .pf-header-row{{background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);padding:10px 18px}}
@@ -395,7 +396,7 @@ def build_html(ai_entries, ai_dev_entries, dotnet_entries, financial_news_entrie
 # ─── EMAIL SENDER ──────────────────────────────────────────────────────────────
 
 def send_email(html_content):
-    today      = datetime.now().strftime("%A, %B %-d, %Y")
+    today      = datetime.now().strftime("%A, %B %#d, %Y")
     today_file = datetime.now().strftime("%Y-%m-%d")
 
     # Outer wrapper — "mixed" allows both a rendered body and file attachments
