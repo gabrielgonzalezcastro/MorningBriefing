@@ -77,9 +77,9 @@
       "name":                "SAP",
       "ticker":              "SAP",
       "type":                "stock",
-      "units":               6.9,
-      "amount_invested_eur": 1365.49,
-      "avg_buying_price":    198.77
+      "units":               13.4,
+      "amount_invested_eur": 2349.59,
+      "avg_buying_price":    176.01
     },
     {
       "name":                "Draftkings",
