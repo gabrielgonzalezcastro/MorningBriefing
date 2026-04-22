@@ -112,6 +112,14 @@
       "units":               20,
       "amount_invested_eur": 1408.20,
       "avg_buying_price":    82.45
+    },
+    {
+      "name":                "Service NOW",
+      "ticker":              "NOW",
+      "type":                "stock",
+      "units":               29,
+      "amount_invested_eur": 2418.72,
+      "avg_buying_price":    98.21
     }
 
    
