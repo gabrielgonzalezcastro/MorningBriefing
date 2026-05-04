@@ -6,6 +6,7 @@
 
 AI_FEEDS = [
     ("TechCrunch",         "https://techcrunch.com/category/artificial-intelligence/feed/"),
+    ("MilestoneAI",         "https://mstone.ai/blog/"),
     ("The Verge",          "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"),
     ("VentureBeat",        "https://venturebeat.com/category/ai/feed/"),
     ("Wired",              "https://www.wired.com/feed/tag/ai/latest/rss"),
